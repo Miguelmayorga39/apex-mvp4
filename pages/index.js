@@ -19,4 +19,10 @@ export default function Home() {
   }
 
   return <h1>Hola Miguel ya funciona</h1>;
+  <button onClick={async () => {
+  await supabase.auth.signOut()
+  location.reload()
+}}>
+  Cerrar sesión
+</button>
 }
