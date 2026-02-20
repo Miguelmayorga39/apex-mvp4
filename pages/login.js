@@ -3,25 +3,30 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
   'https://lrwlqqhchtfxpzobooqq.supabase.co',
-  'sb_publishable_04snxuCxhEl_o8vZ7hdN_g_mMOYHwn0'
+  'sb_publishable_04snxuCxhEl_o8vZ7hdN_g_mMOYHwn0',
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    }
+  }
 )
 
 export default function Login() {
   const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // 1. Revisar si ya hay sesión
-    supabase.auth.getSession().then(({ data }) => {
+    const getSession = async () => {
+      const { data } = await supabase.auth.getSession()
       setUser(data.session?.user ?? null)
-      setLoading(false)
-    })
+    }
 
-    // 2. Escuchar cuando cambia la sesión (cuando regresas de Google)
+    getSession()
+
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setUser(session?.user ?? null)
-        setLoading(false)
       }
     )
 
@@ -41,23 +46,19 @@ export default function Login() {
     setUser(null)
   }
 
-  if (loading) {
-    return <p style={{ textAlign: 'center' }}>Cargando...</p>
-  }
-
-  if (user) {
-    return (
-      <div style={{ textAlign: 'center', marginTop: '100px' }}>
-        <h1>Bienvenido {user.email}</h1>
-        <button onClick={logout}>Cerrar sesión</button>
-      </div>
-    )
-  }
-
   return (
     <div style={{ textAlign: 'center', marginTop: '100px' }}>
-      <h1>Login Apex</h1>
-      <button onClick={login}>Entrar con Google</button>
+      {user ? (
+        <>
+          <h1>Hola {user.email}</h1>
+          <button onClick={logout}>Cerrar sesión</button>
+        </>
+      ) : (
+        <>
+          <h1>Login Apex</h1>
+          <button onClick={login}>Entrar con Google</button>
+        </>
+      )}
     </div>
   )
 }
