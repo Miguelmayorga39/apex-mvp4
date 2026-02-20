@@ -10,19 +10,27 @@ export default function Home() {
     });
   }, []);
 
+  const login = async () => {
+    await supabase.auth.signInWithOAuth({ provider: "google" });
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  };
+
   if (!user) {
     return (
-      <button onClick={() => supabase.auth.signInWithOAuth({ provider: "google" })}>
-        Entrar con Google
-      </button>
+      <div style={{ textAlign: "center", marginTop: "100px" }}>
+        <button onClick={login}>Entrar con Google</button>
+      </div>
     );
   }
 
-  return <h1>Hola Miguel ya funciona</h1>;
-  <button onClick={async () => {
-  await supabase.auth.signOut()
-  location.reload()
-}}>
-  Cerrar sesión
-</button>
+  return (
+    <div style={{ textAlign: "center", marginTop: "100px" }}>
+      <h1>Hola Miguel</h1>
+      <button onClick={logout}>Cerrar sesión</button>
+    </div>
+  );
 }
