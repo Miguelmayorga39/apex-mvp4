@@ -8,13 +8,26 @@ const supabase = createClient(
 
 export default function Login() {
   const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data } = await supabase.auth.getUser()
-      setUser(data.user)
+    // 1. Revisar si ya hay sesión
+    supabase.auth.getSession().then(({ data }) => {
+      setUser(data.session?.user ?? null)
+      setLoading(false)
+    })
+
+    // 2. Escuchar cuando cambia la sesión (cuando regresas de Google)
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null)
+        setLoading(false)
+      }
+    )
+
+    return () => {
+      listener.subscription.unsubscribe()
     }
-    getUser()
   }, [])
 
   const login = async () => {
@@ -26,6 +39,10 @@ export default function Login() {
   const logout = async () => {
     await supabase.auth.signOut()
     setUser(null)
+  }
+
+  if (loading) {
+    return <p style={{ textAlign: 'center' }}>Cargando...</p>
   }
 
   if (user) {
