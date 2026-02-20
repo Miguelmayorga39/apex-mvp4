@@ -1,15 +1,30 @@
-export default async function handler(req, res) {
-  if (req.method === 'POST') {
-    const data = req.body
+import { useEffect, useState } from "react"
+import { createClient } from "@supabase/supabase-js"
 
-    console.log('Webhook recibido:', data)
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+)
 
-    // aquí puedes guardar en Supabase
-    // mandar correo
-    // activar algo
+export default function Home() {
+  const [user, setUser] = useState(null)
 
-    return res.status(200).json({ ok: true })
-  }
+  useEffect(() => {
+    const getUser = async () => {
+      const { data } = await supabase.auth.getUser()
+      setUser(data.user)
+    }
 
-  res.status(405).end()
+    getUser()
+  }, [])
+
+  return (
+    <div>
+      {user ? (
+        <h1>Hola {user.user_metadata.full_name}</h1>
+      ) : (
+        <h1>No has iniciado sesión</h1>
+      )}
+    </div>
+  )
 }
